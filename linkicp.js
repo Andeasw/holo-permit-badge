@@ -1,10 +1,11 @@
 /** 
  * Dimensional Permit Auto-Badge (Right-Bottom + Left Expand) 
+ * 自动指向同目录 index.html
  */ 
 (function () { 
     // ================= 配置区域 =================
     const CONFIG = {
-        baseUrl: "",// 若为空，将自动使用当前目录作为 baseUrl
+        baseUrl: "", // 若为空，将自动使用同目录 index.html
 
         textColor: "#1d1d1f",
         font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
@@ -12,9 +13,9 @@
 
     // ================= 自动 baseUrl 处理 =================
     if (!CONFIG.baseUrl || CONFIG.baseUrl.trim() === "") {
-        CONFIG.baseUrl =
-            window.location.origin +
-            window.location.pathname.replace(/\/[^/]*$/, "");
+        // 获取当前文件所在目录，并指向 index.html
+        const path = window.location.pathname.replace(/\/[^/]*$/, "/index.html");
+        CONFIG.baseUrl = window.location.origin + path;
     }
 
     // ================= 1. 资源注入 =================
@@ -111,10 +112,7 @@
 
     // ================= 3. 主逻辑 =================
     function initBadge() { 
-        // 获取当前页面的域名
-        let rawHost = window.location.hostname; 
-        if (!rawHost || rawHost === "") rawHost = "LOCAL-MODE"; 
-
+        const rawHost = window.location.hostname || "LOCAL-MODE"; 
         const displayDomain = rawHost.toUpperCase().replace("WWW.", ""); 
         const finalTargetUrl = `${CONFIG.baseUrl}?host=${encodeURIComponent(rawHost)}`; 
 
@@ -221,4 +219,3 @@
         initBadge(); 
     } 
 })();
-
