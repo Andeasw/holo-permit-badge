@@ -5,11 +5,16 @@
 (function () {
     // ================= 配置区域 =================
     const CONFIG = {
-        // 基础链接，后面我们会自动拼接 ?host=xxx
-        baseUrl: "https://andeasw.github.io/holo-permit-badge", 
+        // 自动获取 index.html 所在的目录作为 baseUrl
+        baseUrl: window.location.origin +
+                 window.location.pathname.replace(/\/[^/]*$/, ""),
+
         textColor: "#1d1d1f",
         font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
     };
+
+    console.log("Auto baseUrl =", CONFIG.baseUrl);
+})();
 
     // ================= 1. 资源注入 =================
     function loadFontAwesome() {
@@ -228,3 +233,4 @@
         initBadge();
     }
 })();
+
