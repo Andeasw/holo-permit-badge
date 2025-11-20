@@ -348,7 +348,6 @@
         const USER_CONFIG = {
             githubUrl: (ENV_VARS.rawGithub && !ENV_VARS.rawGithub.includes("{{")) ? ENV_VARS.rawGithub : "https://github.com",
             email: (ENV_VARS.rawEmail && !ENV_VARS.rawEmail.includes("{{")) ? ENV_VARS.rawEmail : "void@dimension.null",
-            // 注意：这是兜底显示，如果找不到来源，就会显示这个，而不是 github.io
             defaultDomain: "UNCHARTED.REALM" 
         };
 
@@ -430,48 +429,48 @@
         function initUI() {
             document.getElementById('githubBtn').href = USER_CONFIG.githubUrl;
             
-            /* --- 核心修改：域名获取逻辑 V2 --- */
+            /* --- 核心修改：域名获取逻辑 V3 --- */
             const urlParams = new URLSearchParams(window.location.search);
             let finalDomain = "";
+            let jumpLink = "#"; // 🔥 修复重点：增加 jumpLink 变量，用于存储回跳地址
 
-            // 策略1: 优先使用 URL 中的 host 参数 (手动指定)
+            // 策略1: 优先使用 URL 中的 host 参数 (badge.js 发来的)
             // 例子: page.html?host=google.com
             if (urlParams.get('host')) {
                 finalDomain = urlParams.get('host');
+                jumpLink = "https://" + finalDomain; // 🔥 自动补全 https
             }
             
-            // 策略2: 如果没有 host，检查是否有 target 参数，从目标链接里提取域名
-            // 例子: page.html?target=https://www.baidu.com -> 显示 BAIDU.COM
+            // 策略2: 检查 target 参数
             if (!finalDomain && urlParams.get('target')) {
                 try {
                     let target = urlParams.get('target');
                     if(!target.startsWith('http')) target = 'http://' + target;
                     finalDomain = new URL(target).hostname;
+                    jumpLink = target; // 🔥 直接使用 target 作为链接
                 } catch(e) {}
             }
 
-            // 策略3: 检查 document.referrer (从哪里跳转来的)
-            // 注意：如果对方网站设置了 no-referrer 策略，这一步会失效
+            // 策略3: 检查 document.referrer
             if (!finalDomain && document.referrer) {
                 try {
                     const ref = new URL(document.referrer);
-                    // 排除掉自己跳自己的情况
                     if (ref.hostname !== window.location.hostname && ref.hostname !== "") {
                         finalDomain = ref.hostname;
+                        jumpLink = document.referrer; // 🔥 回跳到来源页
                     }
                 } catch(e) {}
             }
 
             // 策略4: 终极兜底
-            // 如果上面都获取不到，显示 "UNCHARTED.REALM"，而不再显示 "github.io"
             if (!finalDomain) {
                 finalDomain = USER_CONFIG.defaultDomain;
+                jumpLink = "#"; // 没地方跳，原地不动
             }
             
             let domainDisplay = finalDomain.toUpperCase().replace('WWW.', '');
             /* -------------------------------- */
             
-            // ICP 生成逻辑
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let randomCode = '';
             for(let i=0; i<3; i++) {
@@ -484,17 +483,19 @@
             const icp = `ICP-${randomCode}${yyyy}${mm}${dd}`;
 
             document.getElementById('dimId').innerText = Math.floor(Math.random()*9999);
-            updateText(domainDisplay, icp);
+            // 🔥 重点：把计算好的 jumpLink 传给 updateText
+            updateText(domainDisplay, icp, jumpLink);
         }
 
-        function updateText(domain, icp) {
+        function updateText(domain, icp, jumpLink) {
             const t = dictionary[currentLang];
             document.querySelectorAll('[data-key]').forEach(el => el.innerText = t[el.dataset.key]);
             domainScrambler.setText(domain);
             document.getElementById('icpVal').innerText = icp;
             adminScrambler.setText(currentLang === 'en' ? "ARCH-MAGE" : "首席大法师");
-            const p = new URLSearchParams(window.location.search);
-            document.getElementById('enterBtn').href = p.get('target') || '#';
+            
+            // 🔥 修复：不再重新解析 target 参数，而是直接使用传进来的 jumpLink
+            document.getElementById('enterBtn').href = jumpLink;
         }
 
         document.getElementById('langBtn').addEventListener('click', (e) => {
