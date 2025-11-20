@@ -4,8 +4,7 @@
 (function () { 
     // ================= 配置区域 =================
     const CONFIG = {
-        // 若为空，将自动使用当前目录作为 baseUrl
-        baseUrl: "",
+        baseUrl: "",// 若为空，将自动使用当前目录作为 baseUrl
 
         textColor: "#1d1d1f",
         font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
@@ -222,3 +221,4 @@
         initBadge(); 
     } 
 })();
+
