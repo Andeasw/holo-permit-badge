@@ -1,32 +1,15 @@
-name: Deploy to GitHub Pages
-
-on:
-  push:
-    branches:
-      - main  # 或者你的默认分支名，如 master
-
-permissions:
-  contents: write
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Inject Environment Variables
-        # 核心魔法：使用 sed 命令直接修改 HTML 文件
-        # 注意：分隔符使用 | 以避免 URL 中的 / 造成冲突
+- name: Inject Environment Variables
         run: |
-          sed -i "s|{{MY_EMAIL}}|${{ secrets.MY_EMAIL }}|g" index.html
-          sed -i "s|{{MY_GITHUB}}|${{ vars.MY_GITHUB || secrets.MY_GITHUB }}|g" index.html
+          # 尝试从 secrets 读取，如果没有，尝试从 vars 读取
+          EMAIL_VAL="${{ secrets.MY_EMAIL }}"
+          if [ -z "$EMAIL_VAL" ]; then EMAIL_VAL="${{ vars.MY_EMAIL }}"; fi
           
-          # 如果没有设置变量，下面的命令会把占位符替换为空，或者你可以删除这两行保留默认值
-          # 但上面的 JS 逻辑已经处理了占位符保留的情况，所以这里安全。
+          GITHUB_VAL="${{ secrets.MY_GITHUB }}"
+          if [ -z "$GITHUB_VAL" ]; then GITHUB_VAL="${{ vars.MY_GITHUB }}"; fi
 
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          folder: . 
-          # 这里的 '.' 代表当前目录。如果你把 index.html 放在 src 文件夹，请改成 src
+          # 打印日志方便调试 (由于Secret会自动打码，这里只打印是否获取到)
+          if [ -n "$EMAIL_VAL" ]; then echo "Email found!"; else echo "Email NOT found!"; fi
+
+          # 执行替换
+          sed -i "s|{{MY_EMAIL}}|$EMAIL_VAL|g" index.html
+          sed -i "s|{{MY_GITHUB}}|$GITHUB_VAL|g" index.html
