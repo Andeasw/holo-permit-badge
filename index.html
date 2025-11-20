@@ -339,18 +339,15 @@
     <script>
         /* ==========================================
            0. 智能配置中心 (Smart Config)
-           注意：{{...}} 形式的字符串是占位符，GitHub Actions 部署时会自动替换它们。
            ========================================== */
         const ENV_VARS = {
-            // 这些是占位符字符串，切勿随意修改，需与 .yml 文件中的 sed 命令匹配
             rawEmail: "{{MY_EMAIL}}", 
             rawGithub: "{{MY_GITHUB}}" 
         };
 
         const USER_CONFIG = {
-            // 如果占位符没被替换（比如本地打开时），使用默认值；否则使用环境变量值
-            githubUrl: ENV_VARS.rawGithub.includes("{{") ? "https://github.com/your-default-id" : ENV_VARS.rawGithub,
-            email: ENV_VARS.rawEmail.includes("{{") ? "void@dimension.null" : ENV_VARS.rawEmail,
+            githubUrl: (ENV_VARS.rawGithub && !ENV_VARS.rawGithub.includes("{{")) ? ENV_VARS.rawGithub : "https://github.com",
+            email: (ENV_VARS.rawEmail && !ENV_VARS.rawEmail.includes("{{")) ? ENV_VARS.rawEmail : "void@dimension.null",
             defaultDomain: "UNCHARTED.REALM"
         };
 
@@ -430,11 +427,34 @@
         const adminScrambler = new TextScramble(document.getElementById('adminVal'));
 
         function initUI() {
-            // 这里的 USER_CONFIG 已经是处理过的值了
             document.getElementById('githubBtn').href = USER_CONFIG.githubUrl;
             
-            let domain = window.location.hostname.toUpperCase().replace('WWW.','');
+            /* --- 核心修改：域名获取逻辑 --- */
+            // 优先级 1: URL 参数 (?host=xxx 或 ?domain=xxx)
+            // 优先级 2: Referrer (如果能解析出域名)
+            // 优先级 3: 当前页面域名
+            const urlParams = new URLSearchParams(window.location.search);
+            let rawDomain = urlParams.get('host') || urlParams.get('domain');
+            
+            if (!rawDomain && document.referrer) {
+                try {
+                    const refUrl = new URL(document.referrer);
+                    // 只有当 referrer 域名和当前域名不一样时才使用 referrer
+                    if (refUrl.hostname !== window.location.hostname) {
+                        rawDomain = refUrl.hostname;
+                    }
+                } catch(e) {
+                    console.log('Referrer parse error', e);
+                }
+            }
+
+            if (!rawDomain) {
+                rawDomain = window.location.hostname;
+            }
+            
+            let domain = rawDomain.toUpperCase().replace('WWW.','');
             if(!domain) domain = USER_CONFIG.defaultDomain;
+            /* -------------------------------- */
             
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
             let randomCode = '';
@@ -468,7 +488,6 @@
 
         document.getElementById('emailBtn').addEventListener('click', function(e) {
             e.stopPropagation(); e.preventDefault();
-            // 使用 USER_CONFIG 中的 email
             navigator.clipboard.writeText(USER_CONFIG.email).then(() => {
                 const span = this.querySelector('span'); const originalText = span.innerText; const icon = this.querySelector('i');
                 icon.className = "fas fa-check"; span.innerText = currentLang === 'en' ? "COPIED!" : "已复制!";
