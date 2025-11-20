@@ -1,21 +1,22 @@
 /** 
  * Dimensional Permit Auto-Badge (Right-Bottom + Left Expand) 
- * 自动指向同目录 index.html
+ * 自动指向脚本同目录 index.html，无论在哪个网站引用
  */ 
 (function () { 
     // ================= 配置区域 =================
     const CONFIG = {
-        baseUrl: "", // 若为空，将自动使用同目录 index.html
-
+        baseUrl: "", // 若为空，将自动使用脚本同目录 index.html
         textColor: "#1d1d1f",
         font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
     };
 
     // ================= 自动 baseUrl 处理 =================
     if (!CONFIG.baseUrl || CONFIG.baseUrl.trim() === "") {
-        // 获取当前文件所在目录，并指向 index.html
-        const path = window.location.pathname.replace(/\/[^/]*$/, "/index.html");
-        CONFIG.baseUrl = window.location.origin + path;
+        // 获取当前脚本 URL
+        const scriptUrl = document.currentScript.src;
+        // 去掉脚本文件名，拼接 index.html
+        const path = scriptUrl.replace(/\/[^/]*$/, "/index.html");
+        CONFIG.baseUrl = path;
     }
 
     // ================= 1. 资源注入 =================
@@ -112,9 +113,8 @@
 
     // ================= 3. 主逻辑 =================
     function initBadge() { 
-        const rawHost = window.location.hostname || "LOCAL-MODE"; 
-        const displayDomain = rawHost.toUpperCase().replace("WWW.", ""); 
-        const finalTargetUrl = `${CONFIG.baseUrl}?host=${encodeURIComponent(rawHost)}`; 
+        const displayDomain = "LOCAL"; // 这里可以显示任意文本，不再依赖访问者域名
+        const finalTargetUrl = CONFIG.baseUrl; 
 
         const now = new Date(); 
         const icpCode = `ICP-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`; 
@@ -183,7 +183,7 @@
         window.addEventListener("mouseup", stopDrag); 
         window.addEventListener("touchend", stopDrag); 
 
-        // 点击事件：区分拖拽和点击
+        // 点击跳转
         badge.addEventListener("click", (e) => { 
             if (hasMoved) { 
                 e.preventDefault(); 
