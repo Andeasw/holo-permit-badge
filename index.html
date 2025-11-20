@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dimensional Permit | Neural Link</title>
+    <title>Dimensional Permit | Magic Edition</title>
     
     <!-- 字体引入 -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
     
     <style>
         :root {
-            /* --- 核心色彩库 --- */
+            /* --- 核心魔法色彩库 --- */
             --neon-blue: #00f3ff;
             --neon-purple: #bc13fe;
             --neon-pink: #ff0055;
@@ -19,7 +19,7 @@
             --neon-green: #00ff9d;
             --neon-orange: #ff9a00;
             
-            --hud-bg: rgba(8, 8, 10, 0.9);
+            --hud-bg: rgba(12, 12, 18, 0.85);
             --font-title: 'Orbitron', sans-serif;
             --font-mono: 'Share Tech Mono', monospace;
         }
@@ -27,7 +27,7 @@
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
 
         body {
-            background-color: #020202;
+            background-color: #05000a;
             color: var(--neon-blue);
             font-family: var(--font-mono);
             height: 100vh;
@@ -35,48 +35,57 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            perspective: 1000px;
-            cursor: crosshair; /* 全局准星 */
+            perspective: 1200px; /* 增强透视感 */
+            cursor: crosshair;
         }
 
-        /* --- 背景层：星空画布 --- */
+        /* --- 背景层：魔法星空 --- */
         #warp-canvas { 
             position: fixed; top: 0; left: 0; 
             z-index: 0; 
             width: 100%; height: 100%;
         }
         
+        /* 动态魔法迷雾 */
+        .nebula-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(188, 19, 254, 0.1), transparent 70%);
+            animation: nebulaPulse 8s ease-in-out infinite alternate;
+            z-index: 1; pointer-events: none;
+        }
+        
         /* 暗角与扫描线 */
         .vignette {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent 50%, #000 100%);
+            background: radial-gradient(circle, transparent 40%, #000 100%);
             z-index: 2; pointer-events: none;
         }
         .scanlines {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
-            background-size: 100% 4px;
-            z-index: 3; pointer-events: none; opacity: 0.3;
+            background-size: 100% 3px;
+            z-index: 3; pointer-events: none; opacity: 0.2;
         }
 
-        /* --- RGB 流光边界容器 --- */
+        /* --- 卡片容器 --- */
         .card-wrapper {
             position: relative;
-            width: 780px;
+            width: 800px; /* 稍微加宽以容纳更多按钮 */
             max-width: 95%;
-            padding: 2px; /* 边框更细致 */
-            z-index: 100; /* 确保在最上层 */
+            padding: 2px;
+            z-index: 100;
             border-radius: 15px;
             transform-style: preserve-3d;
-            transition: transform 0.05s ease-out; /* 更跟手的3D效果 */
+            transition: transform 0.1s ease-out; 
+            /* 异形剪裁 */
             clip-path: polygon(
-                20px 0, 100% 0, 
-                100% calc(100% - 30px), calc(100% - 30px) 100%, 
-                60px 100%, 0 calc(100% - 60px), 0 20px
+                25px 0, 100% 0, 
+                100% calc(100% - 35px), calc(100% - 35px) 100%, 
+                65px 100%, 0 calc(100% - 65px), 0 25px
             );
         }
 
-        /* 流光动画背景 */
+        /* 彩虹流光边框 */
         .card-wrapper::before {
             content: '';
             position: absolute;
@@ -86,19 +95,19 @@
                 var(--neon-pink), var(--neon-orange), var(--neon-yellow), 
                 var(--neon-green), var(--neon-blue), transparent
             );
-            animation: borderRotate 4s linear infinite;
+            animation: borderRotate 3s linear infinite;
             z-index: -1;
         }
 
         /* --- 全息卡片本体 --- */
         .holo-card {
             background: var(--hud-bg);
-            backdrop-filter: blur(12px); /* 毛玻璃增强 */
+            backdrop-filter: blur(16px);
             width: 100%; height: 100%;
             clip-path: polygon(
-                20px 0, 100% 0, 
-                100% calc(100% - 30px), calc(100% - 30px) 100%, 
-                60px 100%, 0 calc(100% - 60px), 0 20px
+                25px 0, 100% 0, 
+                100% calc(100% - 35px), calc(100% - 35px) 100%, 
+                65px 100%, 0 calc(100% - 65px), 0 25px
             );
             position: relative;
             display: flex;
@@ -106,186 +115,173 @@
         }
 
         .card-inner {
-            padding: 40px;
+            padding: 35px 45px;
             background: 
-                linear-gradient(90deg, rgba(0,243,255,0.03) 1px, transparent 1px) 0 0 / 20px 20px,
-                linear-gradient(rgba(0,243,255,0.03) 1px, transparent 1px) 0 0 / 20px 20px;
+                linear-gradient(90deg, rgba(188,19,254,0.03) 1px, transparent 1px) 0 0 / 30px 30px,
+                linear-gradient(rgba(188,19,254,0.03) 1px, transparent 1px) 0 0 / 30px 30px;
         }
 
-        /* --- 头部区域 --- */
+        /* --- 头部 --- */
         .header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            border-bottom: 2px solid rgba(0,243,255,0.2);
-            padding-bottom: 20px;
-            margin-bottom: 25px;
+            border-bottom: 2px solid rgba(188,19,254,0.3);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
         }
 
-        .sys-title-box { position: relative; pointer-events: none; }
-        
         .sys-title {
             font-family: var(--font-title);
             font-size: 1.8rem;
             font-weight: 900;
-            color: #fff;
-            text-transform: uppercase;
-            text-shadow: 0 0 10px rgba(255,255,255,0.5);
-        }
-        
-        /* 语言切换按钮 - 修复点击问题 */
-        .sys-badge {
-            background: rgba(188, 19, 254, 0.15); 
-            border: 1px solid var(--neon-purple);
-            color: #fff;
-            padding: 6px 12px; 
-            font-weight: bold; 
-            font-size: 0.75rem;
-            box-shadow: 0 0 10px rgba(188, 19, 254, 0.2);
-            cursor: pointer !important; /* 强制手型 */
-            transition: 0.3s;
-            pointer-events: auto; /* 确保接收点击 */
-            z-index: 101;
-        }
-        .sys-badge:hover {
-            background: var(--neon-purple);
-            color: #000;
-            box-shadow: 0 0 20px var(--neon-purple);
-            transform: scale(1.05);
+            background: linear-gradient(to right, #fff, var(--neon-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0,243,255,0.3);
         }
 
-        /* --- 无人机装饰 --- */
-        .drone-unit {
-            position: absolute; right: 20px; top: -50px;
-            width: 100px; height: 100px;
-            z-index: 50;
-            animation: float 6s ease-in-out infinite;
-            pointer-events: none; /* 防止遮挡下方按钮 */
+        .sys-badge {
+            background: rgba(0, 243, 255, 0.1); 
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 6px 12px; 
+            font-weight: bold; 
+            font-size: 0.7rem;
+            cursor: pointer !important;
+            transition: 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        
+        .sys-badge:hover {
+            background: var(--neon-blue); color: #000;
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        /* --- 无人机 (魔法球形态) --- */
+        .drone-unit {
+            position: absolute; right: 30px; top: -40px;
+            width: 80px; height: 80px;
+            z-index: 50;
+            animation: float 5s ease-in-out infinite;
+            pointer-events: none;
+        }
         .drone-core {
-            width: 60px; height: 60px;
-            background: #050505;
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, var(--neon-purple), #000);
+            box-shadow: 0 0 30px var(--neon-purple);
+            position: relative;
+        }
+        .drone-ring {
+            position: absolute; top: 50%; left: 50%;
+            width: 160%; height: 160%;
             border: 2px solid var(--neon-blue);
             border-radius: 50%;
-            margin: 20px auto;
-            position: relative;
-            box-shadow: 0 0 25px var(--neon-blue);
-        }
-        .drone-lens {
-            width: 20px; height: 20px;
-            background: var(--neon-pink);
-            border-radius: 50%;
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 15px var(--neon-pink);
-            animation: pulseEye 2s infinite;
-        }
-        .drone-wing {
-            position: absolute; top: 50%; left: 50%;
-            width: 140%; height: 140%;
-            border: 1px dashed var(--neon-green);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            animation: spin 8s linear infinite;
-            opacity: 0.6;
+            transform: translate(-50%, -50%) rotateX(70deg);
+            animation: spinRing 4s linear infinite;
+            border-left-color: transparent;
+            border-right-color: transparent;
         }
 
         /* --- 数据行 --- */
         .row {
             display: flex; justify-content: space-between; align-items: center;
-            padding: 14px 15px; margin-bottom: 10px;
+            padding: 12px 15px; margin-bottom: 8px;
             background: linear-gradient(90deg, rgba(255,255,255,0.03), transparent);
-            border-left: 3px solid var(--neon-blue);
+            border-left: 3px solid var(--neon-purple);
             transition: 0.3s;
         }
         .row:hover {
-            background: linear-gradient(90deg, rgba(0,243,255,0.15), transparent);
-            border-left-color: var(--neon-pink);
+            background: linear-gradient(90deg, rgba(188,19,254,0.15), transparent);
+            border-left-color: var(--neon-green);
+            padding-left: 25px; /* 悬停位移增强 */
             transform: translateX(5px);
-            box-shadow: -5px 0 15px rgba(0,243,255,0.1);
         }
+        .label { color: #aaa; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase;}
+        .val { font-family: var(--font-title); font-size: 1rem; color: #fff; text-shadow: 0 0 5px var(--neon-blue); }
 
-        .label { color: #888; font-size: 0.8rem; letter-spacing: 2px; }
-        .val { font-family: var(--font-title); font-size: 1.1rem; color: #fff; text-shadow: 0 0 5px var(--neon-blue); }
-        .scramble-text { min-width: 120px; text-align: right; }
-
-        /* --- 按钮组 --- */
+        /* --- 按钮组 (重点修改) --- */
         .action-grid {
-            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;
-            margin-top: 35px;
+            display: grid; 
+            /* PC端一行4个 */
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 12px;
+            margin-top: 30px;
         }
 
         .btn {
             position: relative;
-            background: rgba(0,243,255,0.05);
-            border: 1px solid rgba(0,243,255,0.3);
-            color: var(--neon-blue);
-            padding: 15px;
-            font-family: var(--font-title);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #ccc;
+            padding: 12px 5px;
+            font-family: var(--font-mono);
             text-transform: uppercase;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: bold;
             overflow: hidden;
             transition: 0.3s;
             text-decoration: none;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            gap: 5px;
             cursor: pointer !important;
+            min-height: 70px; /* 增加高度容纳图标 */
         }
+        
+        .btn i { font-size: 1.2rem; margin-bottom: 3px; transition: 0.3s; }
 
-        .btn::after {
-            content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px;
-            background: var(--neon-blue); transform: scaleX(0); transition: 0.3s;
+        /* 按钮悬停特效 */
+        .btn::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: translateX(-100%); transition: 0.5s;
         }
+        .btn:hover::before { transform: translateX(100%); }
 
-        .btn:hover {
-            background: rgba(0,243,255,0.15);
-            border-color: var(--neon-blue);
-            color: #fff;
-            box-shadow: 0 0 20px rgba(0,243,255,0.4);
-        }
-        .btn:hover::after { transform: scaleX(1); }
+        /* 1. GitHub - 紫色 */
+        .btn-github:hover { border-color: var(--neon-purple); color: var(--neon-purple); box-shadow: 0 0 15px rgba(188,19,254,0.3); }
+        
+        /* 2. Email - 黄色 */
+        .btn-email:hover { border-color: var(--neon-yellow); color: var(--neon-yellow); box-shadow: 0 0 15px rgba(255,238,0,0.3); }
 
-        .btn-danger { border-color: rgba(255,0,85,0.3); color: var(--neon-pink); }
-        .btn-danger::after { background: var(--neon-pink); }
-        .btn-danger:hover {
-            background: rgba(255,0,85,0.15);
-            border-color: var(--neon-pink);
-            color: #fff;
-            box-shadow: 0 0 20px rgba(255,0,85,0.4);
-        }
+        /* 3. Enter - 蓝色 (主按钮) */
+        .btn-enter { border: 1px solid var(--neon-blue); color: var(--neon-blue); background: rgba(0,243,255,0.05); }
+        .btn-enter:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 25px var(--neon-blue); }
+        
+        /* 4. Danger - 红色 */
+        .btn-danger:hover { border-color: var(--neon-pink); color: var(--neon-pink); box-shadow: 0 0 15px rgba(255,0,85,0.4); }
 
-        /* --- 爆炸粒子与冲击波 --- */
-        .particle {
-            position: absolute; pointer-events: none; border-radius: 50%;
-            mix-blend-mode: screen;
-        }
+        /* --- 爆炸特效 --- */
+        .particle { position: absolute; pointer-events: none; border-radius: 50%; mix-blend-mode: screen; }
         .shockwave {
             position: absolute; pointer-events: none; border-radius: 50%;
-            border: 2px solid var(--neon-blue);
+            border: 2px solid #fff;
             transform: translate(-50%, -50%);
-            animation: shockwaveAnim 0.6s ease-out forwards;
+            animation: shockwaveAnim 0.8s ease-out forwards;
         }
 
-        /* --- 关键帧 --- */
+        /* 动画定义 */
         @keyframes borderRotate { 100% { transform: rotate(360deg); } }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
-        @keyframes pulseEye { 0%, 100% { opacity: 1; box-shadow: 0 0 15px var(--neon-pink); } 50% { opacity: 0.5; box-shadow: 0 0 5px var(--neon-pink); } }
-        @keyframes spin { 100% { transform: translate(-50%, -50%) rotate(360deg); } }
-        @keyframes shockwaveAnim { 0% { width: 0; height: 0; opacity: 1; border-width: 5px; } 100% { width: 300px; height: 300px; opacity: 0; border-width: 0; } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes spinRing { 100% { transform: translate(-50%, -50%) rotateX(70deg) rotateZ(360deg); } }
+        @keyframes shockwaveAnim { 0% { width: 0; height: 0; opacity: 1; border-width: 10px; border-color: var(--neon-pink); } 100% { width: 500px; height: 500px; opacity: 0; border-width: 0; } }
+        @keyframes nebulaPulse { 0% { opacity: 0.3; transform: scale(1); } 100% { opacity: 0.6; transform: scale(1.1); } }
 
-        /* 移动端 */
+        /* 移动端适配 */
         @media (max-width: 768px) {
-            .card-wrapper { width: 95%; }
-            .action-grid { grid-template-columns: 1fr; }
-            .drone-unit { transform: scale(0.7); top: -40px; right: -10px; }
-            .sys-title { font-size: 1.3rem; }
+            .card-wrapper { width: 92%; }
+            /* 移动端变两行 */
+            .action-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .sys-title { font-size: 1.4rem; }
+            .drone-unit { transform: scale(0.7); top: -30px; right: -10px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 背景层 -->
+    <!-- 背景魔法 -->
+    <div class="nebula-overlay"></div>
     <canvas id="warp-canvas"></canvas>
     <div class="vignette"></div>
     <div class="scanlines"></div>
@@ -293,61 +289,72 @@
     <!-- 3D 容器 -->
     <div class="card-wrapper" id="tiltCard">
         
-        <!-- 无人机 -->
+        <!-- 魔法球装饰 -->
         <div class="drone-unit">
-            <div class="drone-wing"></div>
-            <div class="drone-core">
-                <div class="drone-lens"></div>
-            </div>
+            <div class="drone-ring"></div>
+            <div class="drone-core"></div>
         </div>
 
         <div class="holo-card">
             <div class="card-inner">
                 <div class="header">
                     <div class="sys-title-box">
-                        <div class="sys-title">DIMENSIONAL PERMIT</div>
-                        <div style="color: var(--neon-purple); letter-spacing: 3px; font-size: 0.6rem; margin-top: 8px;">
-                            SECURE PROTOCOL v9.0 // <span id="timeVal">00:00:00</span>
+                        <div class="sys-title">MAGIC PERMIT</div>
+                        <div style="color: #888; letter-spacing: 2px; font-size: 0.6rem; margin-top: 5px;">
+                            DIMENSION ID: <span id="dimId" style="color:var(--neon-yellow)">Unknown</span> // <span id="timeVal">00:00:00</span>
                         </div>
                     </div>
-                    <!-- 修复：z-index 和 cursor -->
-                    <div class="sys-badge" id="langBtn">CN / EN</div>
+                    <div class="sys-badge" id="langBtn">EN / 中文</div>
                 </div>
 
                 <div class="data-grid">
                     <div class="row">
-                        <span class="label" data-key="target">TARGET DOMAIN</span>
-                        <span class="val scramble-text" id="domainVal" style="color: var(--neon-yellow)">DETECTING...</span>
+                        <span class="label" data-key="target">LANDING ZONE</span>
+                        <span class="val scramble-text" id="domainVal" style="color: var(--neon-green)">SCANNING...</span>
                     </div>
                     <div class="row">
-                        <span class="label" data-key="admin">NEURAL ARCHITECT</span>
-                        <span class="val" id="adminVal" style="color: var(--neon-green)">ROOT_USER</span>
+                        <span class="label" data-key="admin">REALM LORD</span>
+                        <span class="val" id="adminVal" style="color: var(--neon-purple)">WIZARD_01</span>
                     </div>
                     <div class="row">
-                        <span class="label" data-key="status">LINK STATUS</span>
-                        <span class="val" style="color: var(--neon-blue)">100% STABLE</span>
+                        <span class="label" data-key="status">MANA LEVEL</span>
+                        <span class="val" style="color: var(--neon-blue)">OVERFLOWING</span>
                     </div>
                     <div class="row" style="border-left-color: var(--neon-orange)">
-                        <span class="label" data-key="icp">LICENSE ID</span>
-                        <!-- 自动生成日期ICP -->
+                        <span class="label" data-key="icp">RUNE ID</span>
                         <span class="val" id="icpVal">LOADING...</span>
                     </div>
                 </div>
 
+                <!-- 按钮组：增加 Github 和 Email -->
                 <div class="action-grid">
-                    <a href="#" id="enterBtn" class="btn">
-                        <i class="fas fa-rocket"></i> <span data-key="btn_enter">INITIATE JUMP</span>
+                    <!-- 1. GitHub -->
+                    <a href="#" target="_blank" id="githubBtn" class="btn btn-github">
+                        <i class="fab fa-github"></i> 
+                        <span data-key="btn_github">CODE BASE</span>
                     </a>
-                    <button class="btn" id="contactBtn">
-                        <i class="fas fa-satellite-dish"></i> <span data-key="btn_contact">SIGNAL</span>
+                    
+                    <!-- 2. Email (点击复制) -->
+                    <button class="btn btn-email" id="emailBtn">
+                        <i class="fas fa-envelope"></i> 
+                        <span data-key="btn_email" id="emailText">SUMMON ME</span>
                     </button>
+
+                    <!-- 3. 主跳转 -->
+                    <a href="#" id="enterBtn" class="btn btn-enter">
+                        <i class="fas fa-rocket"></i> 
+                        <span data-key="btn_enter">WARP JUMP</span>
+                    </a>
+
+                    <!-- 4. 自毁/自检 -->
                     <button class="btn btn-danger" id="verifyBtn">
-                        <i class="fas fa-biohazard"></i> <span data-key="btn_verify">SYS.CHECK</span>
+                        <i class="fas fa-skull"></i> 
+                        <span data-key="btn_verify">DO NOT PUSH</span>
                     </button>
                 </div>
                 
-                <div style="text-align: center; margin-top: 20px; color: #444; font-size: 0.6rem; letter-spacing: 2px;">
-                    // UNAUTHORIZED ACCESS WILL BE TERMINATED //
+                <div style="text-align: center; margin-top: 25px; opacity: 0.5; font-size: 0.6rem; letter-spacing: 3px;">
+                    // CAST SPELL AT YOUR OWN RISK //
                 </div>
             </div>
         </div>
@@ -355,16 +362,24 @@
 
     <script>
         /* ==========================================
-           1. 星际穿越背景 (Warp Drive Starfield)
+           0. 用户配置 (User Config)
+           ========================================== */
+        const USER_CONFIG = {
+            githubUrl: "https://github.com/your-username", // 替换你的GitHub
+            email: "wizard@dimension.com",                 // 替换你的邮箱
+            defaultDomain: "UNCHARTED.REALM"               // 本地测试时显示的域名
+        };
+
+        /* ==========================================
+           1. 魔法星空背景 (Magic Starfield)
            ========================================== */
         const canvas = document.getElementById('warp-canvas');
         const ctx = canvas.getContext('2d');
-        let width, height;
+        let width, height, stars = [];
+        let warpSpeed = 0;
         
-        // 状态变量
-        let warpSpeed = 0; // 额外的加速速度
-        let baseSpeed = 2; // 基础巡航速度
-        let stars = [];
+        // 魔法色盘
+        const MAGIC_COLORS = ['#00f3ff', '#bc13fe', '#ff0055', '#ffee00', '#00ff9d'];
 
         function resize() {
             width = canvas.width = window.innerWidth;
@@ -373,68 +388,56 @@
         }
 
         class Star {
-            constructor() {
-                this.init();
-            }
+            constructor() { this.init(); }
             init() {
-                this.x = (Math.random() - 0.5) * width; // 居中坐标系
+                this.x = (Math.random() - 0.5) * width;
                 this.y = (Math.random() - 0.5) * height;
-                this.z = Math.random() * width; // 深度
+                this.z = Math.random() * width;
+                this.color = MAGIC_COLORS[Math.floor(Math.random() * MAGIC_COLORS.length)];
+                this.size = Math.random();
             }
             update() {
-                // 速度 = 基础 + 点击加速
-                let s = baseSpeed + warpSpeed;
-                this.z -= s;
-
+                this.z -= (2 + warpSpeed); // 基础速度2
                 if (this.z <= 0) this.init();
             }
             draw() {
-                // 透视投影计算
                 let sx = (this.x / this.z) * width + width/2;
                 let sy = (this.y / this.z) * height + height/2;
-                
-                // 计算大小和颜色透明度
-                let r = (width - this.z) * 0.0015;
+                let r = (width - this.z) * 0.002 * this.size;
                 let opacity = 1 - (this.z / width);
 
                 ctx.beginPath();
-                ctx.fillStyle = `rgba(0, 243, 255, ${opacity})`;
+                ctx.fillStyle = this.color;
+                ctx.globalAlpha = opacity;
                 
-                // 如果处于加速状态，绘制线条（拉丝效果）
+                // 加速时的拉丝效果
                 if (warpSpeed > 5) {
-                    let tailLength = warpSpeed * 2;
-                    let sx_prev = (this.x / (this.z + tailLength)) * width + width/2;
-                    let sy_prev = (this.y / (this.z + tailLength)) * height + height/2;
-                    
-                    ctx.strokeStyle = `rgba(0, 243, 255, ${opacity * 0.5})`;
+                    let tail = warpSpeed * 3;
+                    let oldX = (this.x / (this.z + tail)) * width + width/2;
+                    let oldY = (this.y / (this.z + tail)) * height + height/2;
+                    ctx.strokeStyle = this.color;
                     ctx.lineWidth = r;
-                    ctx.moveTo(sx_prev, sy_prev);
+                    ctx.moveTo(oldX, oldY);
                     ctx.lineTo(sx, sy);
                     ctx.stroke();
                 } else {
                     ctx.arc(sx, sy, r > 0 ? r : 0, 0, Math.PI * 2);
                     ctx.fill();
                 }
+                ctx.globalAlpha = 1.0;
             }
         }
 
         function initStars() {
             stars = [];
-            for(let i=0; i<800; i++) stars.push(new Star());
+            for(let i=0; i<600; i++) stars.push(new Star());
         }
 
         function animateBg() {
-            // 拖尾效果：黑色背景带一点透明度
-            ctx.fillStyle = 'rgba(2, 2, 2, 0.4)'; 
+            ctx.fillStyle = 'rgba(5, 0, 10, 0.3)'; // 拖尾颜色更深，偏紫
             ctx.fillRect(0, 0, width, height);
-
             stars.forEach(s => { s.update(); s.draw(); });
-
-            // 速度衰减：让加速效果慢慢停下来
-            if (warpSpeed > 0) {
-                warpSpeed *= 0.96;
-            }
-
+            if (warpSpeed > 0) warpSpeed *= 0.95;
             requestAnimationFrame(animateBg);
         }
 
@@ -443,89 +446,72 @@
         animateBg();
 
         /* ==========================================
-           2. 赛博爆炸特效 (Interaction)
+           2. 交互逻辑 (Interaction)
            ========================================== */
+        // 点击页面加速
         document.addEventListener('mousedown', (e) => {
-            // 1. 背景加速 (Warp Speed)
-            warpSpeed = 50; 
-
-            // 2. 粒子爆炸
-            createExplosion(e.clientX, e.clientY);
-
-            // 3. 冲击波
+            if(e.target.closest('.btn')) return; // 点击按钮不加速
+            warpSpeed = 40;
             createShockwave(e.clientX, e.clientY);
+            createExplosion(e.clientX, e.clientY);
         });
 
         function createShockwave(x, y) {
             const wave = document.createElement('div');
             wave.classList.add('shockwave');
-            wave.style.left = x + 'px';
-            wave.style.top = y + 'px';
+            wave.style.left = x + 'px'; wave.style.top = y + 'px';
             document.body.appendChild(wave);
-            setTimeout(() => wave.remove(), 600);
+            setTimeout(() => wave.remove(), 800);
         }
 
         function createExplosion(x, y) {
-            const colors = ['#00f3ff', '#bc13fe', '#ff0055', '#ffee00'];
-            for (let i = 0; i < 25; i++) {
+            for (let i = 0; i < 15; i++) {
                 const p = document.createElement('div');
                 p.classList.add('particle');
                 document.body.appendChild(p);
-
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                const size = Math.random() * 4 + 2;
                 
-                p.style.width = `${size}px`; p.style.height = `${size}px`;
+                const color = MAGIC_COLORS[Math.floor(Math.random() * MAGIC_COLORS.length)];
+                const size = Math.random() * 5 + 2;
+                p.style.width = size+'px'; p.style.height = size+'px';
                 p.style.background = color;
-                p.style.boxShadow = `0 0 ${size*2}px ${color}`;
-                p.style.left = `${x}px`; p.style.top = `${y}px`;
+                p.style.boxShadow = `0 0 10px ${color}`;
+                p.style.left = x+'px'; p.style.top = y+'px';
 
-                // 物理运动计算
                 const angle = Math.random() * Math.PI * 2;
-                const velocity = 100 + Math.random() * 100;
-                const tx = Math.cos(angle) * velocity;
-                const ty = Math.sin(angle) * velocity;
-
+                const v = 80 + Math.random() * 100;
+                
                 p.animate([
-                    { transform: 'translate(0,0) scale(1)', opacity: 1 },
-                    { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
-                ], { duration: 800, easing: 'cubic-bezier(0,.9,.57,1)', fill: 'forwards' });
-
-                setTimeout(() => p.remove(), 800);
+                    { transform: 'translate(0,0)', opacity: 1 },
+                    { transform: `translate(${Math.cos(angle)*v}px, ${Math.sin(angle)*v}px)`, opacity: 0 }
+                ], { duration: 600, fill: 'forwards' });
+                
+                setTimeout(() => p.remove(), 600);
             }
         }
 
-        /* ==========================================
-           3. 3D 视差 (Parallax)
-           ========================================== */
+        // 3D 卡片倾斜
         const card = document.getElementById('tiltCard');
         document.addEventListener('mousemove', (e) => {
-            const xAxis = (window.innerWidth / 2 - e.pageX) / 30;
-            const yAxis = (window.innerHeight / 2 - e.pageY) / 30;
-            card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+            const x = (window.innerWidth/2 - e.pageX) / 25;
+            const y = (window.innerHeight/2 - e.pageY) / 25;
+            card.style.transform = `rotateY(${x}deg) rotateX(${y}deg)`;
         });
 
         /* ==========================================
-           4. 内容逻辑 & 文字特效
+           3. 业务逻辑 (幽默风趣版)
            ========================================== */
-        // 黑客文字解密类
+        // 乱码特效类
         class TextScramble {
-            constructor(el) {
-                this.el = el;
-                this.chars = '!<>-_\\/[]{}—=+*^?#________';
-                this.update = this.update.bind(this);
-            }
+            constructor(el) { this.el = el; this.chars = '!<>-_\\/[]{}—=+*^?#'; }
             setText(newText) {
                 const oldText = this.el.innerText;
                 const length = Math.max(oldText.length, newText.length);
-                const promise = new Promise((resolve) => this.resolve = resolve);
+                const promise = new Promise(resolve => this.resolve = resolve);
                 this.queue = [];
                 for (let i = 0; i < length; i++) {
                     const from = oldText[i] || '';
                     const to = newText[i] || '';
-                    const start = Math.floor(Math.random() * 40);
-                    const end = start + Math.floor(Math.random() * 40);
-                    this.queue.push({ from, to, start, end });
+                    this.queue.push({ from, to, start: Math.random()*30, end: Math.random()*30 + 30 });
                 }
                 cancelAnimationFrame(this.frameRequest);
                 this.frame = 0;
@@ -535,50 +521,42 @@
             update() {
                 let output = '';
                 let complete = 0;
-                for (let i = 0, n = this.queue.length; i < n; i++) {
+                for (let i = 0; i < this.queue.length; i++) {
                     let { from, to, start, end, char } = this.queue[i];
-                    if (this.frame >= end) {
-                        complete++;
-                        output += to;
-                    } else if (this.frame >= start) {
-                        if (!char || Math.random() < 0.28) {
-                            char = this.chars[Math.floor(Math.random() * this.chars.length)];
-                            this.queue[i].char = char;
-                        }
-                        output += `<span style="color: #444">${char}</span>`;
-                    } else {
-                        output += from;
-                    }
+                    if (this.frame >= end) { complete++; output += to; }
+                    else if (this.frame >= start) {
+                        if (!char || Math.random() < 0.3) char = this.chars[Math.floor(Math.random() * this.chars.length)];
+                        this.queue[i].char = char;
+                        output += `<span style="color:#555">${char}</span>`;
+                    } else output += from;
                 }
                 this.el.innerHTML = output;
-                if (complete === this.queue.length) {
-                    this.resolve();
-                } else {
-                    this.frameRequest = requestAnimationFrame(this.update);
-                    this.frame++;
-                }
+                if (complete === this.queue.length) this.resolve();
+                else { this.frameRequest = requestAnimationFrame(this.update.bind(this)); this.frame++; }
             }
         }
 
-        // 语言包
+        // 幽默字典
         const dictionary = {
             en: {
-                target: "TARGET DOMAIN",
-                admin: "NEURAL ARCHITECT",
-                status: "LINK STATUS",
-                icp: "LICENSE ID",
-                btn_enter: "INITIATE JUMP",
-                btn_contact: "SIGNAL",
-                btn_verify: "SYS.CHECK"
+                target: "CRASH SITE",
+                admin: "REALM LORD",
+                status: "MANA LEVEL",
+                icp: "RUNE ID",
+                btn_github: "SPELL BOOK",
+                btn_email: "SUMMON ME",
+                btn_enter: "WARP JUMP",
+                btn_verify: "DO NOT PUSH"
             },
             zh: {
-                target: "目标维度",
-                admin: "神经架构师",
-                status: "链路状态",
-                icp: "备案许可",
-                btn_enter: "启动跃迁",
-                btn_contact: "发送信号",
-                btn_verify: "系统自检"
+                target: "坠落坐标",
+                admin: "位面之主",
+                status: "魔力浓度",
+                icp: "符文契约",
+                btn_github: "藏经阁",
+                btn_email: "传音入密",
+                btn_enter: "原地飞升",
+                btn_verify: "自毁程序"
             }
         };
 
@@ -586,88 +564,107 @@
         const domainScrambler = new TextScramble(document.getElementById('domainVal'));
         const adminScrambler = new TextScramble(document.getElementById('adminVal'));
 
-        // 获取自动化数据
-        function getAutoData() {
-            // 1. 自动获取域名
-            let domain = window.location.hostname.toUpperCase();
-            if(!domain) domain = "LOCAL.DIMENSION";
+        function initUI() {
+            // 1. 绑定 Github
+            document.getElementById('githubBtn').href = USER_CONFIG.githubUrl;
             
-            // 2. 自动获取日期生成ICP
+            // 2. 域名获取
+            let domain = window.location.hostname.toUpperCase().replace('WWW.','');
+            if(!domain) domain = USER_CONFIG.defaultDomain;
+            
+            // 3. ICP 日期生成
             const now = new Date();
-            const yyyy = now.getFullYear();
-            const mm =String(now.getMonth() + 1).padStart(2, '0');
-            const dd = String(now.getDate()).padStart(2, '0');
-            const icp = `ICP-${yyyy}${mm}${dd}`;
+            const icp = `RUNE-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}`;
+            
+            // 4. 随机 ID
+            document.getElementById('dimId').innerText = Math.floor(Math.random()*9999);
 
-            return { domain, icp };
+            updateText(domain, icp);
         }
 
-        function updateUI() {
-            const data = getAutoData();
+        function updateText(domain, icp) {
+            const t = dictionary[currentLang];
+            document.querySelectorAll('[data-key]').forEach(el => el.innerText = t[el.dataset.key]);
+            
+            domainScrambler.setText(domain);
+            document.getElementById('icpVal').innerText = icp;
+            adminScrambler.setText(currentLang === 'en' ? "ARCH-MAGE" : "首席大法师");
+
+            // 链接参数处理
+            const p = new URLSearchParams(window.location.search);
+            document.getElementById('enterBtn').href = p.get('target') || '#';
+        }
+
+        // 语言切换
+        document.getElementById('langBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentLang = currentLang === 'en' ? 'zh' : 'en';
             const t = dictionary[currentLang];
             
-            // 更新静态标签
-            document.querySelectorAll('[data-key]').forEach(el => {
-                el.innerText = t[el.getAttribute('data-key')];
-            });
-
-            // 更新动态值
-            domainScrambler.setText(data.domain);
-            document.getElementById('icpVal').innerText = data.icp; // 更新ICP
+            // 刷新文字
+            initUI(); 
             
-            const adminName = currentLang === 'en' ? "ROOT_USER_01" : "最高权限者";
-            adminScrambler.setText(adminName);
-
-            // 链接自动指向当前页面或参数
-            const p = new URLSearchParams(window.location.search);
-            let targetUrl = p.get('target') || '#';
-            document.getElementById('enterBtn').href = targetUrl;
-        }
-
-        // 语言切换事件
-        document.getElementById('langBtn').addEventListener('click', (e) => {
-            e.stopPropagation(); // 防止触发背景爆炸（可选，如果希望同时也爆炸可以去掉）
-            currentLang = currentLang === 'en' ? 'zh' : 'en';
-            updateUI();
-            
-            // 按钮本身的反馈动画
+            // 按钮本身特效
             const btn = e.target;
-            btn.style.transform = "scale(1.1)";
-            setTimeout(()=>btn.style.transform = "scale(1)", 100);
-            
-            // 小范围爆炸
-            createExplosion(e.clientX, e.clientY);
+            btn.style.boxShadow = "0 0 20px var(--neon-blue)";
+            setTimeout(() => btn.style.boxShadow = "", 300);
         });
 
-        // 自检按钮
-        document.getElementById('verifyBtn').addEventListener('click', (e) => {
+        // 邮箱复制逻辑
+        document.getElementById('emailBtn').addEventListener('click', function(e) {
             e.stopPropagation();
-            const btn = e.currentTarget;
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> SCANNING...`;
-            btn.style.borderColor = "var(--neon-yellow)";
+            e.preventDefault();
             
-            setTimeout(() => {
-                btn.innerHTML = `<i class="fas fa-check"></i> SECURE`;
-                btn.style.color = "var(--neon-green)";
-                btn.style.borderColor = "var(--neon-green)";
-                btn.style.boxShadow = "0 0 15px var(--neon-green)";
+            navigator.clipboard.writeText(USER_CONFIG.email).then(() => {
+                const span = this.querySelector('span');
+                const originalText = span.innerText;
+                const icon = this.querySelector('i');
                 
+                // 视觉反馈
+                icon.className = "fas fa-check";
+                span.innerText = currentLang === 'en' ? "COPIED!" : "已复制!";
+                this.style.borderColor = "var(--neon-green)";
+                this.style.color = "var(--neon-green)";
+                
+                createExplosion(e.clientX, e.clientY); // 复制成功放个烟花
+
                 setTimeout(() => {
-                    btn.innerHTML = originalHTML;
-                    btn.style = ""; // Reset
+                    icon.className = "fas fa-envelope";
+                    span.innerText = originalText;
+                    this.style = ""; // Reset style
                 }, 2000);
-            }, 1500);
+            });
         });
 
-        // 时间跳动
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById('timeVal').innerText = now.toLocaleTimeString();
-        }, 1000);
+        // 自毁按钮逻辑
+        document.getElementById('verifyBtn').addEventListener('click', function(e) {
+            e.stopPropagation();
+            const originalHTML = this.innerHTML;
+            
+            this.innerHTML = `<i class="fas fa-bomb fa-spin"></i> ${currentLang==='en'?'RUNNING...':'快跑...'}`;
+            this.style.borderColor = "var(--neon-pink)";
+            this.style.color = "var(--neon-pink)";
+            
+            // 模拟剧烈震动
+            document.body.style.transform = "translateX(5px)";
+            setTimeout(() => document.body.style.transform = "translateX(-5px)", 50);
+            setTimeout(() => document.body.style.transform = "translateX(5px)", 100);
+            setTimeout(() => document.body.style.transform = "translate(0)", 150);
 
+            setTimeout(() => {
+                this.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${currentLang==='en'?'FAILED':'失败'}`;
+                setTimeout(() => {
+                    this.innerHTML = originalHTML;
+                    this.style = "";
+                }, 1500);
+            }, 1200);
+        });
+
+        // 时间刷新
+        setInterval(() => document.getElementById('timeVal').innerText = new Date().toLocaleTimeString(), 1000);
+        
         // 启动
-        setTimeout(updateUI, 300);
+        setTimeout(initUI, 200);
 
     </script>
 </body>
