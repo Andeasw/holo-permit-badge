@@ -1,15 +1,45 @@
-- name: Inject Environment Variables
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main    # 确保这里是你仓库的主分支名 (main 或 master)
+
+# 必须赋予写权限，否则无法推送到 gh-pages 分支
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 下载代码
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 2. 注入环境变量 (核心修复步骤)
+      - name: Inject Environment Variables
+        env:
+          # 逻辑：优先读取 Secrets -> 其次读取 Vars -> 如果都没有，使用默认值
+          # 这样无论你在 GitHub 设置里填的是 Secret 还是 Variable 都能生效
+          REAL_EMAIL: ${{ secrets.MY_EMAIL || vars.MY_EMAIL || 'void@missing.config' }}
+          REAL_GITHUB: ${{ secrets.MY_GITHUB || vars.MY_GITHUB || 'https://github.com' }}
         run: |
-          # 尝试从 secrets 读取，如果没有，尝试从 vars 读取
-          EMAIL_VAL="${{ secrets.MY_EMAIL }}"
-          if [ -z "$EMAIL_VAL" ]; then EMAIL_VAL="${{ vars.MY_EMAIL }}"; fi
+          echo "开始替换环境变量..."
           
-          GITHUB_VAL="${{ secrets.MY_GITHUB }}"
-          if [ -z "$GITHUB_VAL" ]; then GITHUB_VAL="${{ vars.MY_GITHUB }}"; fi
+          # 使用 sed 命令替换 index.html 中的占位符
+          # 使用 | 作为分隔符，防止 URL 中的 / 导致报错
+          sed -i "s|{{MY_EMAIL}}|$REAL_EMAIL|g" index.html
+          sed -i "s|{{MY_GITHUB}}|$REAL_GITHUB|g" index.html
+          
+          echo "替换完成！"
+          # 验证一下文件是否真的变了 (只打印前20行检查，不会泄露全部敏感信息)
+          head -n 20 index.html
 
-          # 打印日志方便调试 (由于Secret会自动打码，这里只打印是否获取到)
-          if [ -n "$EMAIL_VAL" ]; then echo "Email found!"; else echo "Email NOT found!"; fi
-
-          # 执行替换
-          sed -i "s|{{MY_EMAIL}}|$EMAIL_VAL|g" index.html
-          sed -i "s|{{MY_GITHUB}}|$GITHUB_VAL|g" index.html
+      # 3. 部署到 GitHub Pages
+      - name: Deploy to gh-pages branch
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: .           # 部署当前根目录
+          branch: gh-pages    # 部署到 gh-pages 分支 (重要！)
+          clean: true         # 每次部署前清空目标分支
