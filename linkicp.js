@@ -1,80 +1,56 @@
 /**
- * Dimensional Permit Auto-Badge (Right-Bottom + Left Expand)
- * Target: Auto-detected based on script location
+ * Dimensional Permit Auto-Badge (Optimized)
+ * Behavior: Right-Bottom Fixed, Expands Left on Hover, Draggable
  */
 (function () {
-    // ================= 配置区域 (已优化自动获取路径) =================
+    // ================= Configuration =================
     const CONFIG = {
-        // 自动获取当前脚本所在的目录作为 baseUrl
-        // 例如脚本在 https://example.com/badge/script.js
-        // baseUrl 将自动变为 https://example.com/badge/
+        // Auto-detect base URL from script location
         baseUrl: (function() {
             const script = document.currentScript;
             if (script && script.src) {
-                // 获取脚本的 src，并截取到最后一个斜杠，保留斜杠
                 return script.src.substring(0, script.src.lastIndexOf('/') + 1);
             }
-            // 如果无法获取（例如内联脚本或控制台运行），回退到默认地址或当前页面路径
             return "https://andeasw.github.io/holo-permit-badge/"; 
         })(),
         textColor: "#1d1d1f",
-        font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+        font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace"
     };
 
-    // ================= 1. 资源注入 =================
-    function loadFontAwesome() {
+    // ================= 1. Resource Injection =================
+    function injectResources() {
+        // FontAwesome
         if (!document.querySelector('link[href*="font-awesome"]')) {
             const link = document.createElement('link');
             link.rel = 'stylesheet';
             link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
             document.head.appendChild(link);
         }
-    }
 
-    // ================= 2. 样式注入 (保持不变) =================
-    function injectStyles() {
+        // Styles
         const style = document.createElement("style");
         style.innerHTML = `
             #dim-permit-badge {
-                position: fixed;
-                right: 20px;
-                bottom: 20px;
-                z-index: 99999;
-                display: flex; align-items: center;
-                width: 36px; height: 36px;
-                overflow: hidden;
+                position: fixed; right: 20px; bottom: 20px; z-index: 99999;
+                display: flex; align-items: center; flex-direction: row-reverse;
+                width: 36px; height: 36px; overflow: hidden;
                 background: rgba(255, 255, 255, 0.15);
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
-                border: 1px solid rgba(255, 255, 255, 0.4);
-                border-radius: 30px;
+                backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 30px;
                 box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.05);
-                color: ${CONFIG.textColor};
-                font-family: ${CONFIG.font};
-                font-size: 12px;
-                white-space: nowrap;
-                text-decoration: none;
-                user-select: none;
-                touch-action: none;
-                transform: scale(0.9);
-                opacity: 0;
+                color: ${CONFIG.textColor}; font-family: ${CONFIG.font}; font-size: 12px;
+                white-space: nowrap; text-decoration: none; user-select: none;
+                transform: scale(0.9); opacity: 0;
                 transition: width 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.4s ease, transform 0.4s ease, background 0.3s;
                 cursor: grab;
-                flex-direction: row-reverse;
             }
             #dim-permit-badge.dragging {
-                cursor: grabbing;
-                transition: none !important;
+                cursor: grabbing; transition: none !important;
                 box-shadow: 0 8px 20px rgba(0,0,0,0.15);
             }
-            #dim-permit-badge.visible {
-                transform: scale(1);
-                opacity: 1;
-            }
+            #dim-permit-badge.visible { transform: scale(1); opacity: 1; }
             #dim-permit-badge:hover:not(.dragging) {
-                width: auto;
-                padding-left: 15px;
-                padding-right: 0;
+                width: auto; padding-left: 15px; padding-right: 0;
                 background: rgba(255, 255, 255, 0.65);
                 box-shadow: 4px 8px 25px rgba(0, 0, 0, 0.1);
             }
@@ -85,136 +61,111 @@
             .dp-shield {
                 font-size: 16px;
                 background: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 25%, #8fd3f4 50%, #84fab0 75%, #a18cd1 100%);
-                background-size: 300% 300%;
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-                animation: holoFlow 4s linear infinite;
-                pointer-events: none;
+                background-size: 300% 300%; -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                animation: holoFlow 4s linear infinite; pointer-events: none;
             }
-            @keyframes holoFlow {
-                0% { background-position: 0% 50%; }
-                100% { background-position: 100% 50%; }
-            }
+            @keyframes holoFlow { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
             .dp-content {
                 display: flex; align-items: center; gap: 8px;
-                opacity: 0;
-                transform: translateX(10px);
-                transition: all 0.4s ease 0.1s;
-                pointer-events: none;
+                opacity: 0; transform: translateX(10px);
+                transition: all 0.4s ease 0.1s; pointer-events: none;
             }
-            #dim-permit-badge:hover:not(.dragging) .dp-content {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            #dim-permit-badge:hover:not(.dragging) .dp-content { opacity: 1; transform: translateX(0); }
             .dp-divider { width: 1px; height: 10px; background: rgba(0,0,0,0.15); }
             .dp-date { font-family: 'Courier New', monospace; font-weight: 700; opacity: 0.8; }
         `;
         document.head.appendChild(style);
     }
 
-    // ================= 3. 主逻辑 (保持不变) =================
+    // ================= 2. Core Logic =================
     function initBadge() {
-
-        // 1. 获取当前页面的域名 (原始值)
-        let rawHost = window.location.hostname;
-        if (!rawHost || rawHost === "") rawHost = "LOCAL-MODE";
-
-        // 2. 格式化域名用于显示 (大写，去www)
+        // Domain Processing
+        let rawHost = window.location.hostname || "LOCAL-MODE";
         const displayDomain = rawHost.toUpperCase().replace("WWW.", "");
+        
+        // Generate Target URL (Matches HTML logic: ?host=...)
+        const targetUrl = `${CONFIG.baseUrl}?host=${encodeURIComponent(rawHost)}`;
 
-        // 3. 🔥 生成带参数的跳转链接
-        // 这里的 baseUrl 已经是自动获取的脚本目录了
-        const finalTargetUrl = `${CONFIG.baseUrl}?host=${encodeURIComponent(rawHost)}`;
-
+        // Date Code
         const now = new Date();
         const icpCode = `ICP-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}`;
 
+        // DOM Construction
         const badge = document.createElement("a");
         badge.id = "dim-permit-badge";
-        
-        // 设置 href 属性，确保右键在新标签页打开也能带参数
-        badge.href = finalTargetUrl;
+        badge.href = targetUrl;
         badge.target = "_blank"; 
-
         badge.innerHTML = `
-            <div class="dp-icon-box">
-                <i class="fas fa-shield-alt dp-shield"></i>
-            </div>
+            <div class="dp-icon-box"><i class="fas fa-shield-alt dp-shield"></i></div>
             <div class="dp-content">
                 <span>${displayDomain}</span>
                 <span class="dp-divider"></span>
                 <span class="dp-date">${icpCode}</span>
             </div>
         `;
-
         document.body.appendChild(badge);
 
-        // ================= 拖拽逻辑 =================
+        // ================= 3. Interactions =================
         let isDragging = false, hasMoved = false;
         let startX, startY, initialLeft, initialTop;
 
-        const startDrag = (e) => {
+        // Drag Handlers
+        const onStart = (e) => {
             if (e.type === "mousedown" && e.button !== 0) return;
-            isDragging = true;
-            hasMoved = false;
+            isDragging = true; hasMoved = false;
             badge.classList.add("dragging");
-            const clientX = e.type === "touchstart" ? e.touches[0].clientX : e.clientX;
-            const clientY = e.type === "touchstart" ? e.touches[0].clientY : e.clientY;
-            startX = clientX; startY = clientY;
+            const cx = e.type.includes("touch") ? e.touches[0].clientX : e.clientX;
+            const cy = e.type.includes("touch") ? e.touches[0].clientY : e.clientY;
+            startX = cx; startY = cy;
             const rect = badge.getBoundingClientRect();
             initialLeft = rect.left; initialTop = rect.top;
-            e.preventDefault(); // 防止触摸时触发链接跳转
+            if(e.type.includes("touch")) e.preventDefault();
         };
 
-        const onDrag = (e) => {
+        const onMove = (e) => {
             if (!isDragging) return;
-            const clientX = e.type === "touchmove" ? e.touches[0].clientX : e.clientX;
-            const clientY = e.type === "touchmove" ? e.touches[0].clientY : e.clientY;
-            const dx = clientX - startX;
-            const dy = clientY - startY;
+            const cx = e.type.includes("touch") ? e.touches[0].clientX : e.clientX;
+            const cy = e.type.includes("touch") ? e.touches[0].clientY : e.clientY;
+            const dx = cx - startX, dy = cy - startY;
             if (Math.abs(dx) > 2 || Math.abs(dy) > 2) hasMoved = true;
-            let newLeft = initialLeft + dx;
-            let newTop = initialTop + dy;
-            const maxLeft = window.innerWidth - badge.offsetWidth;
-            const maxTop = window.innerHeight - badge.offsetHeight;
-            badge.style.left = Math.max(0, Math.min(newLeft, maxLeft)) + "px";
-            badge.style.top = Math.max(0, Math.min(newTop, maxTop)) + "px";
-            badge.style.right = "auto";
-            badge.style.bottom = "auto";
+            
+            const maxL = window.innerWidth - badge.offsetWidth;
+            const maxT = window.innerHeight - badge.offsetHeight;
+            badge.style.left = Math.max(0, Math.min(initialLeft + dx, maxL)) + "px";
+            badge.style.top = Math.max(0, Math.min(initialTop + dy, maxT)) + "px";
+            badge.style.right = "auto"; badge.style.bottom = "auto";
         };
 
-        const stopDrag = () => {
+        const onEnd = () => {
             if (!isDragging) return;
             isDragging = false;
             badge.classList.remove("dragging");
         };
 
-        badge.addEventListener("mousedown", startDrag);
-        badge.addEventListener("touchstart", startDrag, { passive: false });
-        window.addEventListener("mousemove", onDrag);
-        window.addEventListener("touchmove", onDrag, { passive: false });
-        window.addEventListener("mouseup", stopDrag);
-        window.addEventListener("touchend", stopDrag);
-
-        // 点击事件：区分是拖拽结束还是真正的点击
+        // Click Handler (Prevent link if dragged)
         badge.addEventListener("click", (e) => {
             if (hasMoved) {
-                // 如果移动过，则是拖拽，阻止跳转
-                e.preventDefault();
-                e.stopPropagation();
+                e.preventDefault(); e.stopPropagation();
             } else {
-                // 如果没移动，是点击，允许跳转
                 e.preventDefault();
-                window.open(finalTargetUrl, "_blank");
+                window.open(targetUrl, "_blank");
             }
         });
 
-        // 进入底部区域时自动显示
+        // Bind Events
+        badge.addEventListener("mousedown", onStart);
+        badge.addEventListener("touchstart", onStart, { passive: false });
+        window.addEventListener("mousemove", onMove);
+        window.addEventListener("touchmove", onMove, { passive: false });
+        window.addEventListener("mouseup", onEnd);
+        window.addEventListener("touchend", onEnd);
+
+        // Scroll Visibility
         function checkScroll() {
-            const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollH = document.documentElement.scrollHeight - window.innerHeight;
             const scrolled = window.scrollY || window.pageYOffset;
-            if (scrollableHeight <= 0 || scrolled >= scrollableHeight - 80) {
+            // Show if at bottom OR if page is not scrollable
+            if (scrollH <= 0 || scrolled >= scrollH - 80) {
                 badge.classList.add("visible");
             } else {
                 badge.classList.remove("visible");
@@ -226,9 +177,8 @@
         setTimeout(checkScroll, 500);
     }
 
-    loadFontAwesome();
-    injectStyles();
-
+    // ================= 4. Initialization =================
+    injectResources();
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", initBadge);
     } else {
