@@ -1,75 +1,93 @@
-# Dimensional Permit HUD
+# 🆔 Dimensional Permit (Holo-Badge)
 
-A holographic contact widget and badge combo that renders a glassmorphism control card (`index.html`) plus an embeddable floating verifier (`linkicp.js`). The experience mixes language toggling, canvas starfields, clipboard actions, drag-and-drop docking, and smart referrer detection so the permit always reflects the host page.
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Stack](https://img.shields.io/badge/stack-HTML%20%2F%20CSS%20%2F%20JS-orange.svg)
+![Style](https://img.shields.io/badge/style-Cyberpunk%20%2F%20Holographic-purple)
 
-## Highlights
-- **Zero-build stack**: vanilla HTML/CSS/JS with no dependencies beyond Google Fonts and Font Awesome.
-- **Dynamic targeting**: the main permit derives the visiting host from URL parameters, explicit targets, or `document.referrer` and keeps CTA links aligned.
-- **Text-scramble UI**: labels, ICP codes, and CTA states animate without blocking interaction.
-- **Embeddable badge**: `linkicp.js` can be dropped into any site to surface the permit in a single line of HTML.
-- **Automated injections**: the GitHub Action replaces `{{MY_EMAIL}}` and `{{MY_GITHUB}}` placeholders per deployment secrets.
+A visual identity system consisting of a **Glassmorphism Control Card** (`index.html`) and an **Embeddable Floating Widget** (`linkicp.js`).
 
-## Project structure
+Designed for developers to showcase their "digital identity" across multiple websites. The system features neon aesthetics, text scrambling effects, and a seamless handshake between the floating badge and the main permit card.
 
-| Path | Purpose |
-| --- | --- |
-| `index.html` | Main holographic permit, starfield background, language logic, and CTA interactions. |
-| `linkicp.js` | Floating badge that auto-detects its base URL, displays the visitor domain, and deep-links back to the permit. |
-| `.github/workflows/deploy.yml` | GitHub Pages workflow that injects secrets/variables before publishing to `gh-pages`. |
-| `LICENSE` | MIT license text. |
+---
 
-## Configuration
+## ✨ Key Features
 
-`index.html` contains two placeholders that are replaced during deployment:
+*   **⚡️ Zero-Build Architecture**: Pure Vanilla JS/CSS. No node_modules, no webpack. Just drop it and run.
+*   **🔗 Context-Aware Linking**: The floating badge automatically detects the host domain and passes it to the permit card via URL parameters (e.g., `?host=google.com`), ensuring the "Landing Zone" always reflects the visitor's origin.
+*   **🎨 Cyberpunk UI**:
+    *   **Permit Card**: 3D tilt effect, canvas starfield background, and "decoding" text animations.
+    *   **Badge**: Draggable, expandable on hover, and auto-hides when not needed.
+*   **🤖 Automated Injection**: Includes a GitHub Action that automatically injects your Email and GitHub URL from repository secrets into the HTML during deployment.
 
-- `{{MY_EMAIL}}` → becomes the address copied by the “SUMMON ME” button.
-- `{{MY_GITHUB}}` → feeds the primary GitHub CTA.
+## 📂 Project Structure
 
-If the placeholders remain (for example when serving locally), the UI falls back to `void@dimension.null` and `https://github.com`. No additional build step is required.
+| File | Description |
+| :--- | :--- |
+| **`index.html`** | The core holographic permit. Handles the 3D visuals, parameter parsing, and user interactions. |
+| **`linkicp.js`** | The client-side widget. Embed this on *other* websites. It auto-detects its own location and creates the floating badge. |
+| **`.github/workflows`** | Contains the CI/CD logic to inject secrets and deploy to GitHub Pages. |
 
-## Local preview
+## ⚙️ Configuration
 
-```bash
-# inside a clone of this repo
-python3 -m http.server 4173
-# visit http://localhost:4173
-```
+The project uses **placeholder injection** to keep your personal info out of the source code. The following strings in `index.html` are replaced at build time:
 
-You can also open `index.html` directly in a browser, but serving over HTTP ensures referrer logic behaves the same as in production.
+*   `{{MY_EMAIL}}` → Replaced with your contact email (triggers "Copy to Clipboard").
+*   `{{MY_GITHUB}}` → Replaced with your GitHub profile URL.
 
-## Deploying to GitHub Pages
+> **Note:** If running locally without replacement, the system falls back to `void@dimension.null` and `https://github.com`.
 
-1. **Fork or clone the repository** into your GitHub account.
-2. **Add deployment secrets/variables** under `Settings → Secrets and variables → Actions`:
-   - Secret `MY_EMAIL`
-   - Secret `MY_GITHUB`
-   (You may also create repository variables with the same names; the workflow prefers secrets.)
-3. **Push to `main` or `master`**. The `Deploy to GitHub Pages` workflow runs automatically and can also be triggered manually via *Run workflow*.
-4. The workflow replaces the placeholders, publishes the entire repository to the `gh-pages` branch, and keeps it clean on every run.
-5. In `Settings → Pages`, point GitHub Pages to the `gh-pages` branch (root). Your permit lives at `https://<user>.github.io/<repo>/`.
+## 🚀 Deployment Guide (GitHub Pages)
 
-## One-click Cloudflare Pages deployment
+This project is optimized for GitHub Pages with a custom Workflow.
 
-1. Log in to Cloudflare and create a new **Pages** project.
-2. Connect your Git provider and select this repository.
-3. Use the following build settings:
-   - **Framework preset**: `None`
-   - **Build command**: leave empty (or `echo "skip"`)
-   - **Build output directory**: `./`
-4. Under *Environment variables*, add `MY_EMAIL` and `MY_GITHUB` with the values you want exposed on the card.
-5. Kick off the first deployment. Cloudflare serves the static files as-is, so future pushes redeploy automatically.
-6. (Optional) Map a custom domain under *Custom domains* for a branded permit URL and badge base.
+1.  **Fork** this repository.
+2.  Go to **Settings** → **Secrets and variables** → **Actions**.
+3.  Click **New repository variable** (recommended) or **New repository secret** and add:
+    *   `MY_EMAIL`: Your actual email address.
+    *   `MY_GITHUB`: Your profile link (e.g., `https://github.com/Andeasw`).
+4.  Go to the **Actions** tab.
+    *   Select **Deploy to GitHub Pages**.
+    *   Click **Run workflow** (or simply push a commit to `main`).
+5.  Once the workflow finishes (Green ✅):
+    *   Go to **Settings** → **Pages**.
+    *   Ensure **Source** is set to `Deploy from a branch`.
+    *   Select **Branch**: `gh-pages` / `/ (root)`.
 
-## Embedding the floating badge
+## 🔌 Embedding the Badge
 
-Place the badge script on any page you control (preferably near the end of `<body>`):
+To add the floating badge to your blog or personal site, simply add this **one line** of code before the closing `</body>` tag.
+
+Replace the URL with the address of your deployed GitHub Pages:
 
 ```html
-<script async src="https://your-permit-domain.tld/linkicp.js"></script>
+<!-- Replace with YOUR deployed repo URL -->
+<script async src="https://<your-username>.github.io/<repo-name>/linkicp.js"></script>
 ```
 
-The script determines its own base URL, injects Font Awesome if necessary, and creates a draggable badge. When the badge is clicked, it opens the permit page with a `host` query parameter so `index.html` can display the originating site. Loading multiple pages with the same script automatically keeps the styling and copy consistent.
+### How it works:
+1.  The script automatically calculates its own `baseUrl`.
+2.  It detects the `hostname` of the page it is embedded on.
+3.  It generates a link to your Permit Card: `https://.../index.html?host=current-site.com`.
+4.  When clicked, your Permit Card reads the `?host=` parameter and displays "LANDING ZONE: CURRENT-SITE.COM".
 
-## License
+## 🛠 Local Development
 
-MIT License © 2025 Prince. See [`LICENSE`](./LICENSE) for details.
+To preview the animations locally:
+
+```bash
+# Python 3
+python -m http.server 8000
+
+# PHP
+php -S localhost:8000
+```
+
+Open `http://localhost:8000`.
+*To test the domain logic locally, try: `http://localhost:8000/?host=TEST-SYSTEM`*
+
+## 📄 License
+
+Released under the [MIT License](LICENSE).
+
+---
+*Magic does not come cheap.*
