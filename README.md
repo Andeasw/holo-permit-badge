@@ -36,6 +36,8 @@ The project uses **placeholder injection** to keep your personal info out of the
 
 > **Note:** If running locally without replacement, the system falls back to `void@dimension.null` and `https://github.com`.
 
+---
+
 ## 🚀 Deployment Guide (GitHub Pages)
 
 This project is optimized for GitHub Pages with a custom Workflow.
@@ -53,11 +55,43 @@ This project is optimized for GitHub Pages with a custom Workflow.
     *   Ensure **Source** is set to `Deploy from a branch`.
     *   Select **Branch**: `gh-pages` / `/ (root)`.
 
+---
+
+## ⚡️ Deployment Guide (Cloudflare Pages)
+
+Cloudflare Pages serves static files, so Environment Variables are not injected automatically by default. You have two options:
+
+### Method A: Automated Injection (Recommended)
+This method uses a build command to replace the placeholders dynamically.
+
+1.  Create a project in Cloudflare Pages and link your repository.
+2.  In **Build settings**:
+    *   **Framework preset**: `None`
+    *   **Build command**: Copy and paste the command below exactly:
+        ```bash
+        sed -i "s|{{MY_EMAIL}}|$MY_EMAIL|g" index.html && sed -i "s|{{MY_GITHUB}}|$MY_GITHUB|g" index.html
+        ```
+    *   **Build output directory**: `.` (or leave empty)
+3.  In **Environment variables**, add:
+    *   `MY_EMAIL`
+    *   `MY_GITHUB`
+4.  **Deploy**. (If you change variables later, you must trigger a new deployment).
+
+### Method B: Manual Edit (Simplest)
+If you don't want to configure build commands, you can simply hardcode your information:
+
+1.  Open `index.html` in your editor.
+2.  Find `{{MY_EMAIL}}` and replace it with your email.
+3.  Find `{{MY_GITHUB}}` and replace it with your profile URL.
+4.  Commit and Push. Cloudflare will deploy the file as-is.
+
+---
+
 ## 🔌 Embedding the Badge
 
 To add the floating badge to your blog or personal site, simply add this **one line** of code before the closing `</body>` tag.
 
-Replace the URL with the address of your deployed GitHub Pages:
+Replace the URL with the address of your deployed GitHub/Cloudflare Page:
 
 ```html
 <!-- Replace with YOUR deployed repo URL -->
