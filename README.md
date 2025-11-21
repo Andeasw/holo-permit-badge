@@ -1,31 +1,75 @@
-🛡️ Holo-Dock Navigation (Simulated UI)
+# Dimensional Permit HUD
 
-A futuristic, scroll-triggered navigation anchor designed to simulate a high-end system interface.
+A holographic contact widget and badge combo that renders a glassmorphism control card (`index.html`) plus an embeddable floating verifier (`linkicp.js`). The experience mixes language toggling, canvas starfields, clipboard actions, drag-and-drop docking, and smart referrer detection so the permit always reflects the host page.
 
-Holo-Dock is a pure JavaScript UI component that injects a floating, glassmorphism "capsule" into your website's footer. Designed for aesthetics and user experience, it functions as a dynamic anchor point—guiding users to essential contact information, social links, or simulated system statuses without cluttering the main interface.
+## Highlights
+- **Zero-build stack**: vanilla HTML/CSS/JS with no dependencies beyond Google Fonts and Font Awesome.
+- **Dynamic targeting**: the main permit derives the visiting host from URL parameters, explicit targets, or `document.referrer` and keeps CTA links aligned.
+- **Text-scramble UI**: labels, ICP codes, and CTA states animate without blocking interaction.
+- **Embeddable badge**: `linkicp.js` can be dropped into any site to surface the permit in a single line of HTML.
+- **Automated injections**: the GitHub Action replaces `{{MY_EMAIL}}` and `{{MY_GITHUB}}` placeholders per deployment secrets.
 
-It features a procedural holographic animation, deep blurred transparency, and intelligent docking behavior that respects screen real estate.
+## Project structure
 
-💎 Concept & Design
+| Path | Purpose |
+| --- | --- |
+| `index.html` | Main holographic permit, starfield background, language logic, and CTA interactions. |
+| `linkicp.js` | Floating badge that auto-detects its base URL, displays the visitor domain, and deep-links back to the permit. |
+| `.github/workflows/deploy.yml` | GitHub Pages workflow that injects secrets/variables before publishing to `gh-pages`. |
+| `LICENSE` | MIT license text. |
 
-Aesthetic: Built on the principles of Glassmorphism, featuring ultra-low opacity backgrounds with strong optical blurring to blend seamlessly into any page environment.
+## Configuration
 
-Animation: The central shield icon utilizes a continuous fluid gradient (Holographic Flow), simulating a living, breathing system status.
+`index.html` contains two placeholders that are replaced during deployment:
 
-Behavior:
+- `{{MY_EMAIL}}` → becomes the address copied by the “SUMMON ME” button.
+- `{{MY_GITHUB}}` → feeds the primary GitHub CTA.
 
-Smart Docking: The badge remains compacted as a small, unobtrusive indicator while idle.
+If the placeholders remain (for example when serving locally), the UI falls back to `void@dimension.null` and `https://github.com`. No additional build step is required.
 
-Proximity Awareness: Automatically expands to reveal textual information (Navigation/Contact) only when interacted with.
+## Local preview
 
-Scroll Logic: intelligently hides itself during main content consumption, appearing only when the user reaches the footer area.
+```bash
+# inside a clone of this repo
+python3 -m http.server 4173
+# visit http://localhost:4173
+```
 
-🎯 Intended Use
+You can also open `index.html` directly in a browser, but serving over HTTP ensures referrer logic behaves the same as in production.
 
-Portfolio Highlights: To display contact methods in a tech-savvy way.
+## Deploying to GitHub Pages
 
-Simulated Systems: For creative landing pages that require a "System Ready" or "Verified" aesthetic.
+1. **Fork or clone the repository** into your GitHub account.
+2. **Add deployment secrets/variables** under `Settings → Secrets and variables → Actions`:
+   - Secret `MY_EMAIL`
+   - Secret `MY_GITHUB`
+   (You may also create repository variables with the same names; the workflow prefers secrets.)
+3. **Push to `main` or `master`**. The `Deploy to GitHub Pages` workflow runs automatically and can also be triggered manually via *Run workflow*.
+4. The workflow replaces the placeholders, publishes the entire repository to the `gh-pages` branch, and keeps it clean on every run.
+5. In `Settings → Pages`, point GitHub Pages to the `gh-pages` branch (root). Your permit lives at `https://<user>.github.io/<repo>/`.
 
-Minimalist Navigation: As a singular, high-priority action button (e.g., "Contact Me" or "Source Code") that replaces bulky traditional footers.
+## One-click Cloudflare Pages deployment
 
-[ This is a visual simulation component. ]
+1. Log in to Cloudflare and create a new **Pages** project.
+2. Connect your Git provider and select this repository.
+3. Use the following build settings:
+   - **Framework preset**: `None`
+   - **Build command**: leave empty (or `echo "skip"`)
+   - **Build output directory**: `./`
+4. Under *Environment variables*, add `MY_EMAIL` and `MY_GITHUB` with the values you want exposed on the card.
+5. Kick off the first deployment. Cloudflare serves the static files as-is, so future pushes redeploy automatically.
+6. (Optional) Map a custom domain under *Custom domains* for a branded permit URL and badge base.
+
+## Embedding the floating badge
+
+Place the badge script on any page you control (preferably near the end of `<body>`):
+
+```html
+<script async src="https://your-permit-domain.tld/linkicp.js"></script>
+```
+
+The script determines its own base URL, injects Font Awesome if necessary, and creates a draggable badge. When the badge is clicked, it opens the permit page with a `host` query parameter so `index.html` can display the originating site. Loading multiple pages with the same script automatically keeps the styling and copy consistent.
+
+## License
+
+MIT License © 2025 Prince. See [`LICENSE`](./LICENSE) for details.
