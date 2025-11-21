@@ -1,57 +1,61 @@
 name: Deploy to GitHub Pages
 
 on:
-  # 1. 监听代码推送 (兼容 main 和 master 分支)
+  # Trigger on push to main branches
   push:
-    branches:
-      - main
-      - master
+    branches: [ "main", "master" ]
   
-  # 2. 🟢 核心修复：添加手动触发按钮
+  # Allow manual trigger from Actions tab
   workflow_dispatch:
 
-# 3. 必须赋予写权限，否则无法推送到 gh-pages 分支
+# Grant write permission to push to the gh-pages branch
 permissions:
   contents: write
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      # --- 第一步：下载代码 ---
+      # ========================================================
+      # 1. Checkout Source Code
+      # ========================================================
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # --- 第二步：替换变量 (带防空保护) ---
+      # ========================================================
+      # 2. Inject Configuration (Secrets & Variables)
+      # ========================================================
       - name: Inject Environment Variables
         env:
-          # 尝试读取 Secret，如果没有则读取 Variable
-          # 如果都没有，值为空字符串，我们在下面的 run 脚本里处理默认值
+          # Priority: Secrets > Variables (Repository Settings)
           INPUT_EMAIL: ${{ secrets.MY_EMAIL || vars.MY_EMAIL }}
           INPUT_GITHUB: ${{ secrets.MY_GITHUB || vars.MY_GITHUB }}
         run: |
-          echo "正在检测环境变量..."
-          
-          # Bash 逻辑：如果 INPUT_EMAIL 为空，则使用默认值
-          # :- 意思是 "如果为空，则使用后面的值"
+          # Check if index.html exists before processing
+          if [ ! -f index.html ]; then
+            echo "Error: index.html not found!"
+            exit 1
+          fi
+
+          echo "Processing configuration injection..."
+
+          # Apply defaults using Bash parameter expansion if inputs are empty
+          # Note: JS also has fallback logic, this is for static persistence.
           REAL_EMAIL="${INPUT_EMAIL:-void@dimension.null}"
           REAL_GITHUB="${INPUT_GITHUB:-https://github.com}"
-          
-          # 打印状态 (Secret会被自动打码显示为 ***，这是正常的)
-          echo "Injecting Email..."
-          
-          # 使用 sed 替换 index.html 中的占位符
-          # 使用 | 作为分隔符，防止 URL 中的 / 报错
+
+          # Execute replacement using sed with '|' delimiter to handle URLs safely
           sed -i "s|{{MY_EMAIL}}|$REAL_EMAIL|g" index.html
           sed -i "s|{{MY_GITHUB}}|$REAL_GITHUB|g" index.html
-          
-          echo "替换完成！检查 index.html 前10行确认替换情况:"
-          head -n 10 index.html
 
-      # --- 第三步：部署到 gh-pages ---
+          echo "Configuration injected successfully."
+
+      # ========================================================
+      # 3. Deploy to GitHub Pages
+      # ========================================================
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: .           # 部署根目录
-          branch: gh-pages    # 推送到 gh-pages 分支
-          clean: true         # 每次清理旧文件
+          folder: .           # Root directory to deploy
+          branch: gh-pages    # Target branch
+          clean: true         # Automatically remove deleted files from target
