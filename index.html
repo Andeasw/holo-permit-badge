@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dimensional Permit</title>
+    <title>Dimensional Permit [SECURE]</title>
     
     <!-- Google Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -371,6 +371,15 @@
            ========================================== */
         class TextScramble {
             constructor(el) { this.el = el; this.chars = '!<>-_\\/[]{}—=+*^?#'; }
+            
+            // NEW: Strict HTML Escaping
+            escape(str) {
+                if (!str) return '';
+                return str.replace(/[&<>'"]/g, tag => ({
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+                }[tag]));
+            }
+
             setText(newText) {
                 const oldText = this.el.innerText; const length = Math.max(oldText.length, newText.length);
                 const promise = new Promise(resolve => this.resolve = resolve);
@@ -378,15 +387,22 @@
                 for (let i = 0; i < length; i++) { const from = oldText[i] || ''; const to = newText[i] || ''; this.queue.push({ from, to, start: Math.random()*30, end: Math.random()*30 + 30 }); }
                 cancelAnimationFrame(this.frameRequest); this.frame = 0; this.update(); return promise;
             }
+            
             update() {
                 let output = ''; let complete = 0;
                 for (let i = 0; i < this.queue.length; i++) {
                     let { from, to, start, end, char } = this.queue[i];
-                    if (this.frame >= end) { complete++; output += to; }
-                    else if (this.frame >= start) {
+                    if (this.frame >= end) { 
+                        complete++; 
+                        output += this.escape(to); // Escape Target
+                    } else if (this.frame >= start) {
                         if (!char || Math.random() < 0.3) char = this.chars[Math.floor(Math.random() * this.chars.length)];
-                        this.queue[i].char = char; output += `<span style="color:#555">${char}</span>`;
-                    } else output += from;
+                        this.queue[i].char = char; 
+                        // Escape random char to prevent breaking HTML of the span
+                        output += `<span style="color:#555">${this.escape(char)}</span>`;
+                    } else {
+                        output += this.escape(from); // Escape Origin
+                    }
                 }
                 this.el.innerHTML = output;
                 if (complete === this.queue.length) this.resolve(); else { this.frameRequest = requestAnimationFrame(this.update.bind(this)); this.frame++; }
@@ -405,16 +421,23 @@
         function initUI() {
             document.getElementById('githubBtn').href = USER_CONFIG.githubUrl;
             
-            // --- Domain Logic (Host Parameter Only) ---
             const urlParams = new URLSearchParams(window.location.search);
             const hostParam = urlParams.get('host');
             
             let finalDomain = USER_CONFIG.defaultDomain;
             let jumpLink = "#";
 
-            if (hostParam) {
+            // NEW: Strict Domain Validation (Hostname only, no path/query/protocol injection)
+            // This regex allows alphanumeric, hyphens, and dots. It blocks tags, quotes, and path separators.
+            const domainRegex = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+            if (hostParam && domainRegex.test(hostParam)) {
                 finalDomain = hostParam;
-                jumpLink = "https://" + hostParam;
+                jumpLink = "https://" + hostParam; // Now safe from open redirect to weird protocols/malformed strings
+            } else if (hostParam) {
+                // Fallback if parameter exists but is invalid
+                console.warn("Security Alert: Invalid domain format detected in host parameter.");
+                finalDomain = "INVALID-DIMENSION";
             }
             
             let domainDisplay = finalDomain.toUpperCase().replace('WWW.', '');
